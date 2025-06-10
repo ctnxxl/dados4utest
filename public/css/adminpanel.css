@@ -1,0 +1,132 @@
+/* adminpanel.css */
+
+/* Reset / global */
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fafafa;
+  margin: 0;
+  padding: 2rem;
+  color: #333;
+}
+
+/* Títulos */
+h1 {
+  margin-bottom: 1rem;
+  color: #1a2c6e;
+}
+
+h2 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #1a2c6e;
+}
+
+/* Formulário de criação */
+#create-user {
+  background: #fff;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+#create-user label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: bold;
+}
+
+#create-user input,
+#create-user select {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#create-user button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #1a2c6e;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#create-user button:hover {
+  background-color: #163d76;
+}
+
+/* Separador */
+#create-user hr {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* Tabela de histórico */
+#search-history {
+  margin-top: 2rem;
+}
+
+#history-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+#history-table th,
+#history-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+#history-table th {
+  background-color: #1a2c6e;
+  color: #fff;
+  font-weight: normal;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+#history-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+  #history-table th, 
+  #history-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  #create-user input,
+  #create-user select {
+    max-width: 100%;
+  }
+}
+.top-bar {
+  margin-left: auto;      /* auto aqui empurra este container até a borda direita */
+  display: flex;          /* coloca os botões lado a lado */
+  gap: 0.5rem;            /* espaçamento entre os botões */
+}
+.top-bar .btn {
+  padding: 0.6rem 1.2rem;
+  background-color: #1a2c6e;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

@@ -1,0 +1,97 @@
+/* auth.css */
+
+/* === Reset / global === */
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  color: #333;
+}
+/* === Container do login === */
+.login-container {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 320px;
+  text-align: center;
+}
+
+/* === Logo centralizada === */
+.logo-center {
+  margin-bottom: 1.5rem;
+}
+
+.logo-center img {
+  max-width: 160px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* === Título “Entrar” === */
+h2 {
+  font-size: 1.5rem;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+/* === Formulário === */
+form {
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: bold;
+}
+
+input[type="username"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #1a2c6e;
+}
+
+/* === Botão de Login === */
+button[type="submit"] {
+  width: 100%;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #1a2c6e;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #155a8a;
+}
+
+/* === Mensagem de erro === */
+#error {
+  display: none;
+  color: #c00;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – Dados 4 You</title>
+
+  <!-- Seu CSS customizado -->
+  <script>document.write('<link rel="stylesheet" href="./css/auth.css?v='+new Date().getHours()+'">')</script>
+    <script>
+    const token = localStorage.getItem('token');
+    if (token) {
+      window.location.replace('/');
+    }
+  </script>
+  <!-- Notyf CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo-center">
+      <img src="imgs/logo.png" alt="Dados 4 You">
+    </div>
+    <form id="loginForm">
+      <label for="username">Usuário</label>
+      <input type="username" id="username" name="username" required />
+
+      <label for="password">Senha</label>
+      <input type="password" id="password" name="password" required />
+
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- Notyf JS -->
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+  <script>document.write('<script src="./script/auth.js?v='+new Date().getHours()+'"><\/script>')</script>
+
+</body>
+</html>

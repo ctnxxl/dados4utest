@@ -1,0 +1,226 @@
+/* public/js/index.js */
+
+// Notyf para notificações
+const notyf = new Notyf();
+
+// Variáveis de controle de tentativas
+let tentativas = 0;
+const maxTentativas = 10;
+const intervaloTentativas = 5000; // 5 segundos
+let swalAberto = false;
+
+// Logout: remove token e retorna ao login
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    window.location.replace('/login');
+  });
+}
+
+const adminBtn = document.getElementById('adminBtn');
+if (adminBtn) {
+  adminBtn.addEventListener('click', () => {
+    window.location.replace('/admin-panel');
+  });
+}
+
+// Aplica máscara de CPF/CNPJ ou telefone
+function aplicarMascara(input) {
+  const tipo = document.querySelector('input[name="tipo"]:checked').value;
+  if (tipo === 'cpf_cnpj') {
+    maskCPF(input);
+  } else if (tipo === 'telefone') {
+    maskTelefone(input);
+  }
+}
+
+function maskCPF(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 11);
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  input.value = v;
+}
+
+function maskTelefone(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 11);
+
+  if (v.length >= 11) {
+    v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  } else if (v.length >= 10) {
+    v = v.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+  } else if (v.length >= 6) {
+    v = v.replace(/^(\d{2})(\d{4,})$/, '($1) $2');
+  } else if (v.length >= 3) {
+    v = v.replace(/^(\d{2})(\d{0,})$/, '($1) $2');
+  }
+
+  input.value = v;
+}
+
+// Preenche grade de resultados com os dados retornados
+function preencherResultado(data) {
+  if (swalAberto) {
+    Swal.close();
+    swalAberto = false;
+  }
+
+  document.querySelector('.result-grid').classList.remove('ocultar-detalhes');
+  document.querySelector('.result-grid').style.display = 'grid';
+
+  document.getElementById('cpf').textContent = data.cpf || '-';
+  document.getElementById('nome_completo').textContent = data.nome_completo || '-';
+  document.getElementById('data_nasc').textContent = data.data_nasc || '-';
+  document.getElementById('sexo').textContent = data.sexo || '-';
+  document.getElementById('nome_mae').textContent = data.nome_mae || '-';
+  document.getElementById('falecido').textContent = data.falecido || '-';
+  document.getElementById('ocupacao').textContent = data.ocupacao || '-';
+
+  // Telefones
+  const telContainer = document.getElementById('telefones');
+  telContainer.innerHTML = '';
+  if (Array.isArray(data.telefones) && data.telefones.length > 0) {
+    data.telefones.forEach(t => {
+      const div = document.createElement('div');
+      div.textContent = t;
+      telContainer.appendChild(div);
+    });
+  } else {
+    telContainer.textContent = '-';
+  }
+
+  // Emails
+  const emailContainer = document.getElementById('emails');
+  emailContainer.innerHTML = '';
+  if (Array.isArray(data.emails) && data.emails.length > 0) {
+    data.emails.forEach(e => {
+      const div = document.createElement('div');
+      div.textContent = e;
+      emailContainer.appendChild(div);
+    });
+  } else {
+    emailContainer.textContent = '-';
+  }
+
+  // Parentes
+  const parentContainer = document.getElementById('parentes');
+  parentContainer.innerHTML = '';
+  if (Array.isArray(data.parentes) && data.parentes.length > 0) {
+    const table = document.createElement('table');
+    table.className = 'parent-table';
+
+    data.parentes.forEach(p => {
+      const [cpf, grau] = p.match(/^(.+?) \((.*?)\)$/)?.slice(1) || ['-', '-'];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>-</td><td>${cpf}</td><td>${grau}</td>`;
+      table.appendChild(tr);
+    });
+
+    parentContainer.appendChild(table);
+  } else {
+    parentContainer.textContent = '-';
+  }
+}
+
+// Executa a consulta via AJAX
+function fazerConsulta() {
+  let valor = document.getElementById('valor').value.trim();
+  const campo = document.querySelector('input[name="tipo"]:checked').value;
+
+  if (campo === 'cpf_cnpj' || campo === 'telefone') {
+    valor = valor.replace(/\D/g, '');
+  }
+
+  fetch('/consultar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo: campo, valor })
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('>> resposta de /consultar:', data);
+
+      if (data.aguardando) {
+        tentativas++;
+
+        if (!swalAberto) {
+          Swal.fire({
+            title: 'Realizando consulta em tempo real...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            showCancelButton: false,
+            didOpen: () => Swal.showLoading()
+          });
+          swalAberto = true;
+        }
+
+        if (tentativas < maxTentativas) {
+          setTimeout(fazerConsulta, intervaloTentativas);
+        } else {
+          Swal.close();
+          swalAberto = false;
+          notyf.error('Tempo de espera excedido. Tente novamente mais tarde.');
+          tentativas = 0;
+        }
+        return;
+      }
+
+      if (swalAberto) {
+        Swal.close();
+        swalAberto = false;
+      }
+      tentativas = 0;
+
+      if (data.erro) {
+        notyf.error(data.erro);
+        return;
+      }
+
+      if (data.multiplos_cpfs) {
+        document.querySelector('.result-grid').classList.add('ocultar-detalhes');
+        const cpfDiv = document.getElementById('cpf');
+        cpfDiv.innerHTML = '<strong>Resultados encontrados:</strong><br><br>';
+        document.querySelector('.result-grid').style.display = 'block';
+
+        data.dados.forEach(pessoa => {
+          const div = document.createElement('div');
+          div.className = 'cpf-card';
+          div.innerHTML = `
+            <strong>CPF:</strong> ${pessoa.cpf}<br>
+            <strong>Nome:</strong> ${pessoa.nome_completo}<br>
+            <strong>Data de Nasc.:</strong> ${pessoa.data_nasc}
+          `;
+
+          const botao = document.createElement('button');
+          botao.textContent = 'CONSULTAR CPF';
+          botao.className = 'consultar-cpf-btn';
+          botao.onclick = () => {
+            document.getElementById('valor').value = pessoa.cpf;
+            document.querySelector('input[value="cpf_cnpj"]').checked = true;
+            fazerConsulta();
+          };
+
+          div.appendChild(document.createElement('br'));
+          div.appendChild(botao);
+          div.style.padding = '0.6rem 0';
+          cpfDiv.appendChild(div);
+        });
+
+        const detalhesDiv = document.getElementById('detalhes');
+        if (detalhesDiv) detalhesDiv.style.display = 'none';
+        return;
+      }
+
+      preencherResultado(data);
+    })
+    .catch(err => {
+      console.error('>> catch geral de fetch:', err);
+      if (swalAberto) {
+        Swal.close();
+        swalAberto = false;
+      }
+      notyf.error('Erro ao consultar dados.');
+    });
+}

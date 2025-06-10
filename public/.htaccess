@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1) index.html como padrão
+  DirectoryIndex index.html
+
+  # 2) sirva arquivos existentes direto
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 3) tudo o resto proxy-pass para o Node na porta 2222
+  RewriteRule ^(.*)$ http://127.0.0.1:2222/$1 [P,QSA,L]
+</IfModule>

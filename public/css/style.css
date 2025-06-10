@@ -1,0 +1,205 @@
+    *{
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1a2c6e;
+    }
+    .logo span.red {
+      color: red;
+    }
+    .top-bar {
+      margin-left: auto;      /* auto aqui empurra este container até a borda direita */
+      display: flex;          /* coloca os botões lado a lado */
+      gap: 0.5rem;            /* espaçamento entre os botões */
+    }
+    .btn-group {
+      padding: 0.6rem 1.2rem;
+      background-color: #1a2c6e;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Caixa da área de busca */
+    .search-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+      margin-top: -0.5rem; /* faz colar mais no logo */
+    }
+
+    .search-section input {
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .radio-inline {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .radio-inline label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .radio-inline input[type="radio"] {
+      accent-color: #1a2c6e;
+      margin: 0;
+    }
+
+    /* Grade de resultados: duas colunas (rótulos e valores) */
+    .result-grid {
+      max-width: 700px;
+      margin: 1rem auto 3rem auto;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      font-size: 0.95rem;
+    }
+
+    .result-grid .label {
+      background-color: #f1f1f1;
+      padding: 0.6rem 1rem;
+      font-weight: bold;
+      border-bottom: 1px solid #eee;
+    }
+
+    .result-grid .value {
+      background-color: #fff;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #eee;
+      word-break: break-word;
+    }
+
+    .result-grid .value div {
+      padding: 0.2rem 0;
+    }
+
+    /* Tabela de parentes: 3 colunas alinhadas */
+    .parent-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .parent-table td {
+      padding: 0.2rem 0;
+      border: none;
+      width: 33.33%;
+    }
+    .parent-table td:nth-child(1) {
+      text-align: left;
+    }
+    .parent-table td:nth-child(2) {
+      text-align: center;
+    }
+    .parent-table td:nth-child(3) {
+      text-align: right;
+    }
+
+    /* Remover última borda inferior das linhas */
+    .result-grid .label:last-child,
+    .result-grid .value:last-child {
+      border-bottom: none;
+    }
+    .ocultavel {
+      display: block;
+    }
+
+    .result-grid.ocultar-detalhes .ocultavel {
+      display: none;
+    }
+    .consultar-cpf-btn {
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid red;
+      background-color: white;
+      color: red;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .consultar-cpf-btn:hover {
+      background-color: red;
+      color: white;
+    }
+    .result-grid {
+      display: none;
+    }
+    .logo-wrapper {
+      height: 40px;              /* altura que você quer exibir */
+      width: 120px;              /* define uma largura pequena */
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-wrapper img {
+      height: auto;
+      width: 100%;               /* imagem vai ocupar toda a largura da wrapper */
+      object-fit: cover;
+    }
+    .logo-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin-top: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .logo-center img {
+      max-width: 160px;
+      height: auto;
+    }
+    .top-bar .btn {
+      padding: 0.6rem 1.2rem;
+      background-color: #1a2c6e;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .radio-inline {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      white-space: nowrap;
+    }
