@@ -89,6 +89,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-  <script type="module" src="./script/index.js?v=1"></script>
+  <script>
+    const version = new Date().getTime();
+    document.write(`<script type="module" src="./script/index.js?v=${version}"><\/script>`);
+  </script>
 </body>
 </html>

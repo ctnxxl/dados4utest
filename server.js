@@ -9,8 +9,6 @@ dotenv.config();
 // Import de rotas e middlewares
 import authRoutes from './src/routes/authRoutes.js';
 import { authenticateToken } from './src/middlewares/authMiddleware.js';
-import { ConsultaPeople } from './src/middlewares/consultaMiddleware.js';
-import { priority }      from './src/middlewares/priorityMiddleware.js';
 import { checkAdminOrSuper } from './src/middlewares/superAdminMiddleware.js';
 import { consultar } from './src/controllers/consultaController.js';
 import db from './src/models/index.js';
