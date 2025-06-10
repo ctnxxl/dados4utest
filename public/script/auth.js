@@ -22,8 +22,8 @@ form.addEventListener('submit', async e => {
     }
 
     // ✅ limpa cache e define novo token
-    localStorage.clear();
-    localStorage.setItem('token', data.token);
+    localStorage.removeItem('token'); // limpa qualquer antigo (garante)
+    localStorage.setItem('token', data.token); // grava novo
     notyf.success('Login bem-sucedido!');
 
     setTimeout(() => {
