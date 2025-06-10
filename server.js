@@ -38,6 +38,7 @@ app.use('/auth', authRoutes);
 app.get('/api/me', authenticateToken, (req, res) => {
   const { id, username, role, email } = req.user;
   res.json({ id, username, role, email });
+  console.log('Usuário autenticado:', req.user);
 });
 
 // 4b) Histórico de buscas
