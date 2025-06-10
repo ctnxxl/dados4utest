@@ -25,10 +25,15 @@ export async function login(req, res) {
 
   // gera JWT
   const token = jwt.sign(
-    { id: user.id, role: user.role },
+    {
+      id: user.id,
+      username: user.username, // ✅ adiciona o nome ao token
+      role: user.role
+    },
     JWT_SECRET,
     { expiresIn: '8h' }
   );
+
 
   return res.json({ token });
 }

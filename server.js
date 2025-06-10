@@ -47,11 +47,12 @@ app.get('/api/history',
   historyList
 );
 app.get('/api/user/me', authenticateToken, async (req, res) => {
-  const user = await db.User.findByPk(req.user.id); // ajusta se usar outro identificador
+  const user = await db.User.findByPk(req.user.id);
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
   res.json({ username: user.username });
 });
+
 
 // 4c) Criação de usuário
 app.post('/api/users',
