@@ -28,7 +28,7 @@ form.addEventListener('submit', async e => {
     console.log('Token atual:', localStorage.getItem('token'));
 
     setTimeout(() => {
-      window.location.replace('/');
+      window.location.href = '/?r=' + new Date().getTime(); // força reload com URL única
     }, 1000);
 
   } catch (err) {
