@@ -1,29 +1,35 @@
 // src/controllers/userController.js
-import { User }   from '../models/index.js';
-import bcrypt     from 'bcrypt';
+import db from '../models/index.js';
+const { User } = db;
+import bcrypt from 'bcrypt';
 
 export async function create(req, res) {
   try {
-    // pegue username, não name
     const { username, email, role, password } = req.body;
 
-    // só superadmin pode criar superadmin
     if (role === 'superadmin' && req.user.role !== 'superadmin') {
       return res.status(403).json({ error: 'Somente superadmin pode criar superadmin' });
     }
+    if (role === 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Somente superadmin pode criar admin' });
+    }
 
-    // gere o hash e coloque em password_hash
     const password_hash = await bcrypt.hash(password, 10);
 
-    // crie usando os nomes corretos de coluna
-    const u = await User.create({
+    const userData = {
       username,
       email,
       role,
       password_hash
-    });
+    };
 
-    // retorne o que faz sentido no front
+    // Só registra created_by se for criando usuário comum
+    if (role === 'user') {
+      userData.created_by = req.user.id;
+    }
+
+    const u = await User.create(userData);
+
     res.status(201).json({
       id:       u.id,
       username: u.username,
@@ -34,7 +40,6 @@ export async function create(req, res) {
   } catch (err) {
     console.error(err);
     if (err.name === 'SequelizeValidationError') {
-      // mostre todas as mensagens de validação
       const msgs = err.errors.map(e => e.message);
       return res.status(400).json({ error: msgs.join('; ') });
     }

@@ -8,7 +8,10 @@ const User = sequelize.define('User', {
     primaryKey: true,
     autoIncrement: true
   },
-
+  created_by: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   // novo campo de login
   username: {
     type: DataTypes.STRING(50),
@@ -42,5 +45,9 @@ const User = sequelize.define('User', {
   underscored: true,
   timestamps: true
 });
+User.associate = models => {
+  User.belongsTo(models.User, { as: 'criador', foreignKey: 'created_by' });
+  User.hasMany(models.User, { as: 'criados', foreignKey: 'created_by' });
+};
 
 export default User;

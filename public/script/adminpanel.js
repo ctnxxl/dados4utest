@@ -1,5 +1,17 @@
 // public/script/adminpanel.js
+  const payload = JSON.parse(atob(token.split('.')[1]));
 
+  const isSuperadmin = payload.role === 'superadmin';
+  const roleSelect = document.getElementById('roleSelect');
+
+  if (!isSuperadmin) {
+    // Remove as opções de admin e superadmin se for apenas admin
+    [...roleSelect.options].forEach(opt => {
+      if (opt.value !== 'user') {
+        opt.remove();
+      }
+    });
+  }
 // Botão “Voltar” (se existir)
 const voltarBtn = document.getElementById('voltarBtn');
 if (voltarBtn) {

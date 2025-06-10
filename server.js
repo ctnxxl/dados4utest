@@ -12,6 +12,7 @@ import { authenticateToken } from './src/middlewares/authMiddleware.js';
 import { ConsultaPeople } from './src/middlewares/consultaMiddleware.js';
 import { priority }      from './src/middlewares/priorityMiddleware.js';
 import { checkAdminOrSuper } from './src/middlewares/superAdminMiddleware.js';
+import { consultar } from './src/controllers/consultaController.js';
 
 // Import de controllers
 import { list as historyList }   from './src/controllers/historyController.js';
@@ -43,9 +44,9 @@ app.get('/api/me', authenticateToken, (req, res) => {
 // 4b) Histórico de buscas
 app.get('/api/history',
   authenticateToken,
-  checkAdminOrSuper,
   historyList
 );
+
 
 // 4c) Criação de usuário
 app.post('/api/users',
@@ -63,7 +64,7 @@ app.get('/login', (_req, res) =>
 );
 
 // 6) Endpoint de consulta de dados
-app.post('/consultar', ConsultaPeople, priority);
+app.post('/consultar', authenticateToken, consultar);
 
 // 7) Admin Panel
 app.get('/admin-panel',

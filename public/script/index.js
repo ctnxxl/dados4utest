@@ -1,4 +1,4 @@
-/* public/js/index.js */
+// public/js/index.js
 
 // Notyf para notificações
 const notyf = new Notyf();
@@ -18,6 +18,7 @@ if (logoutBtn) {
   });
 }
 
+// Botão Admin Panel
 const adminBtn = document.getElementById('adminBtn');
 if (adminBtn) {
   adminBtn.addEventListener('click', () => {
@@ -45,7 +46,6 @@ function maskCPF(input) {
 
 function maskTelefone(input) {
   let v = input.value.replace(/\D/g, '').slice(0, 11);
-
   if (v.length >= 11) {
     v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
   } else if (v.length >= 10) {
@@ -55,11 +55,10 @@ function maskTelefone(input) {
   } else if (v.length >= 3) {
     v = v.replace(/^(\d{2})(\d{0,})$/, '($1) $2');
   }
-
   input.value = v;
 }
 
-// Preenche grade de resultados com os dados retornados
+// Preenche grade de resultados
 function preencherResultado(data) {
   if (swalAberto) {
     Swal.close();
@@ -123,7 +122,7 @@ function preencherResultado(data) {
   }
 }
 
-// Executa a consulta via AJAX
+// Função principal de consulta
 function fazerConsulta() {
   let valor = document.getElementById('valor').value.trim();
   const campo = document.querySelector('input[name="tipo"]:checked').value;
@@ -134,7 +133,10 @@ function fazerConsulta() {
 
   fetch('/consultar', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
     body: JSON.stringify({ tipo: campo, valor })
   })
     .then(res => res.json())
@@ -143,7 +145,6 @@ function fazerConsulta() {
 
       if (data.aguardando) {
         tentativas++;
-
         if (!swalAberto) {
           Swal.fire({
             title: 'Realizando consulta em tempo real...',
@@ -224,3 +225,7 @@ function fazerConsulta() {
       notyf.error('Erro ao consultar dados.');
     });
 }
+
+// Torna funções acessíveis no escopo global
+window.fazerConsulta = fazerConsulta;
+window.aplicarMascara = aplicarMascara;

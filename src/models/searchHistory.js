@@ -21,5 +21,11 @@ const SearchHistory = sequelize.define('SearchHistory', {
   underscored: true,
   timestamps: true
 });
+SearchHistory.associate = (models) => {
+  SearchHistory.belongsTo(models.User, {
+    foreignKey: 'created_by',
+    as: 'user'
+  });
+};
 
 export default SearchHistory;
