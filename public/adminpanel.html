@@ -1,93 +1,107 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Admin Panel | Dados4U</title>
-  <style>
-    body { font-family: sans-serif; padding:20px; }
-    #history-table { width:100%; border-collapse: collapse; margin-top:1rem; }
-    #history-table th, #history-table td { border:1px solid #ddd; padding:8px; }
-  </style>
+  <link rel="icon" type="image/png" href="./imgs/favico.ico" />
+  <link rel="stylesheet" href="./css/adminpanel.css?v=1" />
   <style>body { visibility: hidden; }</style>
-    <link rel="icon" type="image/png" href="./imgs/favico.ico">
-    <script>
-    // Se não tiver token, volta pro login
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.replace('/login');
-    }
-  </script>
- <script>
-  ( () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.replace('/login');
-      return;
-    }
 
-    fetch('/api/me', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    })
-    .then(res => {
-      if (!res.ok) throw new Error();
-      return res.json();
-    })
-    .then(user => {
-      if (user.role !== 'admin' && user.role !== 'superadmin') {
-        window.location.replace('/');
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.replace('/login');
+  </script>
+
+  <script>
+    (() => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.replace('/login');
         return;
       }
-      document.body.style.visibility = 'visible';
-      // chama aqui suas funções de inicialização do painel…
-    })
-    .catch(() => {
-      window.location.replace('/login');
-    });
-  })();
+
+      fetch('/api/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(user => {
+        if (user.role !== 'admin' && user.role !== 'superadmin') {
+          window.location.replace('/');
+          return;
+        }
+        document.body.style.visibility = 'visible';
+      })
+      .catch(() => window.location.replace('/login'));
+    })();
   </script>
-  <script>document.write('<link rel="stylesheet" href="./css/adminpanel.css?v='+new Date().getHours()+'">')</script>
 </head>
 <body>
-  <h1>Admin Panel</h1>
-  <div class="top-bar">
-    <button class="btn" id="voltarBtn">Voltar</button>
-  </div>
-  <div id="create-user">
-    <h2>Criar novo usuário</h2>
-    <form id="form-create-user">
-      <label>Usuário: <input name="username" required></label><br>
-      <label>Email: <input name="email" required type="email"></label><br>
-        <label>Senha: 
-            <input name="password" required type="password" minlength="6" placeholder="min. 6 caracteres">
-        </label><br>
-      <label>Role:
-        <select name="role">
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-          <!-- só superadmin pode criar superadmin, vamos controlar por script -->
-          <option value="superadmin">Superadmin</option>
-        </select>
-      </label><br>
-      <button type="submit">Criar</button>
-    </form>
-    <hr>
+  <div class="admin-container">
+    <aside class="sidebar">
+      <img src="./imgs/logo.png" alt="">
+      <h3>Menu de Opções</h3>
+      <ul>
+        <li><button onclick="mostrarSecao('secao-usuario')">Criar Usuário</button></li>
+        <li><button onclick="mostrarSecao('secao-historico')">Ver Histórico</button></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <h1>Admin Panel</h1>
+        <button class="btn" id="voltarBtn">Voltar</button>
+      </div>
+
+      <div id="secao-usuario" class="secao">
+        <div id="create-user">
+          <h2>Criar novo usuário</h2>
+          <form id="form-create-user">
+            <label>Usuário: <input name="username" required /></label><br />
+            <label>Email: <input name="email" required type="email" /></label><br />
+            <label>Senha:
+              <input name="password" required type="password" minlength="6" placeholder="min. 6 caracteres" />
+            </label><br />
+            <label>Role:
+              <select name="role">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="superadmin">Superadmin</option>
+              </select>
+            </label><br />
+            <button type="submit">Criar</button>
+          </form>
+          <hr />
+        </div>
+      </div>
+
+      <div id="secao-historico" class="secao" style="display: none;">
+        <div id="search-history">
+          <h2>Histórico de buscas</h2>
+          <table id="history-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuário</th>
+                <th>Termo pesquisado</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <div id="search-history">
-    <h2>Histórico de buscas</h2>
-    <table id="history-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Usuário</th>
-          <th>Termo pesquisado</th>
-          <th>Data</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <script>document.write('<script src="./script/adminpanel.js?v='+new Date().getHours()+'"><\/script>')</script>
-
+  <script>
+    function mostrarSecao(id) {
+      document.querySelectorAll('.secao').forEach(secao => secao.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+  </script>
+  <script src="./script/adminpanel.js?v=1"></script>
 </body>
 </html>
