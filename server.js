@@ -13,6 +13,7 @@ import { ConsultaPeople } from './src/middlewares/consultaMiddleware.js';
 import { priority }      from './src/middlewares/priorityMiddleware.js';
 import { checkAdminOrSuper } from './src/middlewares/superAdminMiddleware.js';
 import { consultar } from './src/controllers/consultaController.js';
+import db from './src/models/index.js';
 
 // Import de controllers
 import { list as historyList }   from './src/controllers/historyController.js';
@@ -46,7 +47,12 @@ app.get('/api/history',
   authenticateToken,
   historyList
 );
+app.get('/api/user/me', authenticateToken, async (req, res) => {
+  const user = await db.User.findByPk(req.user.id); // ajusta se usar outro identificador
+  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
+  res.json({ username: user.username });
+});
 
 // 4c) Criação de usuário
 app.post('/api/users',

@@ -1,6 +1,7 @@
 // public/js/index.js
-
+import { carregarNomeDoUsuario } from "./carregaUser.js";
 // Notyf para notificações
+carregarNomeDoUsuario()
 const notyf = new Notyf();
 
 // Variáveis de controle de tentativas

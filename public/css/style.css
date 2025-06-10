@@ -28,10 +28,12 @@
       color: red;
     }
     .top-bar {
-      margin-left: auto;      /* auto aqui empurra este container até a borda direita */
-      display: flex;          /* coloca os botões lado a lado */
-      gap: 0.5rem;            /* espaçamento entre os botões */
+      margin-left: auto;
+      display: flex;
+      align-items: center; /* 🧭 centraliza verticalmente */
+      gap: 1rem;            /* 🧱 espaço entre elementos */
     }
+
     .btn-group {
       padding: 0.6rem 1.2rem;
       background-color: #1a2c6e;
