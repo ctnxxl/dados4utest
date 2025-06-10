@@ -21,15 +21,19 @@ form.addEventListener('submit', async e => {
       return;
     }
 
-    // ✅ limpa cache e define novo token
-    localStorage.removeItem('token'); // limpa qualquer antigo (garante)
-    localStorage.setItem('token', data.token); // grava novo
-    notyf.success('Login bem-sucedido!');
-    console.log('Token atual:', localStorage.getItem('token'));
+    // ✅ Limpa todos os dados anteriores e força novo token
+    localStorage.clear();
+    sessionStorage.clear(); // extra: limpa também sessão, se usada
+    caches.keys().then(names => names.forEach(n => caches.delete(n))); // limpa service workers, se tiver
 
+    // ✅ Salva novo token corretamente
+    localStorage.setItem('token', data.token);
+    notyf.success('Login bem-sucedido!');
+
+    // ✅ Redireciona e força recarregamento sem cache
     setTimeout(() => {
-      window.location.href = '/?r=' + new Date().getTime(); // força reload com URL única
-    }, 1000);
+      window.location.href = '/?t=' + new Date().getTime(); // cache busting
+    }, 500);
 
   } catch (err) {
     notyf.error(err.message);
