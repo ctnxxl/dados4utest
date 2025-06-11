@@ -1,14 +1,22 @@
+// public/js/auth.js
+
 const form = document.getElementById('loginForm');
 const notyf = new Notyf();
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
 
-  // 🔐 Limpa qualquer dado de login antigo
+  // 🔐 Limpa qualquer dado de login anterior
   localStorage.removeItem('token');
-  sessionStorage.clear(); // se usar sessões
+  sessionStorage.clear();
+
   if ('caches' in window) {
-    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    } catch (err) {
+      console.warn('Erro ao limpar caches:', err);
+    }
   }
 
   const username = form.username.value.trim();
@@ -18,7 +26,8 @@ form.addEventListener('submit', async e => {
     const res = await fetch('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
+      cache: 'no-store'
     });
 
     const data = await res.json();
@@ -28,17 +37,17 @@ form.addEventListener('submit', async e => {
       return;
     }
 
-    // ✅ Salva o novo token
+    // ✅ Salva o novo token corretamente
     localStorage.setItem('token', data.token);
     notyf.success('Login bem-sucedido!');
 
-    // ✅ Redireciona e força nova instância da página
+    // ✅ Redireciona com bust de cache
     setTimeout(() => {
-      window.location.href = '/?v=' + new Date().getTime(); // cache busting
+      window.location.href = '/?v=' + new Date().getTime();
     }, 500);
 
   } catch (err) {
+    console.error('Erro no login:', err);
     notyf.error('Erro ao conectar com o servidor');
-    console.error(err);
   }
 });

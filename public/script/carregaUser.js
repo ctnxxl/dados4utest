@@ -1,5 +1,3 @@
-// public/js/carregaUser.js
-
 export async function carregarNomeDoUsuario() {
   try {
     const token = localStorage.getItem('token');
@@ -8,7 +6,7 @@ export async function carregarNomeDoUsuario() {
       return;
     }
 
-    const resposta = await fetch('/api/user/me?t=' + new Date().getTime(), { // evita cache
+    const resposta = await fetch('/api/user/me?t=' + new Date().getTime(), {
       headers: {
         'Authorization': 'Bearer ' + token
       },
@@ -16,7 +14,7 @@ export async function carregarNomeDoUsuario() {
     });
 
     if (!resposta.ok) {
-      localStorage.removeItem('token'); // se o token for inválido, limpa
+      localStorage.clear();
       sessionStorage.clear();
       window.location.replace('/login');
       return;
@@ -25,15 +23,18 @@ export async function carregarNomeDoUsuario() {
     const dados = await resposta.json();
     if (!dados.username) throw new Error('Resposta malformada');
 
-    const nomeFormatado = dados.username.charAt(0).toUpperCase() + dados.username.slice(1).toLowerCase();
-
     const span = document.getElementById('user-name');
-    if (span) span.innerText = `Olá, ${nomeFormatado}`;
-
+    if (span) {
+      span.innerText = `Olá, ${capitalize(dados.username)}`;
+    }
   } catch (erro) {
     console.error('Erro ao carregar nome do usuário:', erro);
-    localStorage.removeItem('token');
+    localStorage.clear();
     sessionStorage.clear();
     window.location.replace('/login');
   }
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }

@@ -40,11 +40,13 @@ let swalAberto = false;
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('token');
+    localStorage.clear();
     sessionStorage.clear();
-    window.location.replace('/login');
+    caches.keys().then(names => names.forEach(n => caches.delete(n))); // limpa SW cache
+    window.location.href = '/login?t=' + new Date().getTime(); // força recarregamento
   });
 }
+
 
 const adminBtn = document.getElementById('adminBtn');
 if (adminBtn) {

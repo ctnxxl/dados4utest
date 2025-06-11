@@ -4,11 +4,15 @@
   <meta charset="UTF-8">
   <title>DADOS4U - Consultar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>document.write('<link rel="stylesheet" href="./css/style.css?v='+new Date().getHours()+'">')</script>
+  
+  <!-- Cache busting no CSS -->
+  <script>document.write('<link rel="stylesheet" href="./css/style.css?v='+new Date().getTime()+'">')</script>
+  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
   <link rel="icon" type="image/png" href="./imgs/favico.ico">
-    <script>
-    // Se não tiver token, volta pro login
+
+  <!-- Proteção contra acesso sem login -->
+  <script>
     const token = localStorage.getItem('token');
     if (!token) {
       window.location.replace('/login');
@@ -22,30 +26,28 @@
         <img src="./imgs/logo-sem-dado.png" alt="Logo Dados 4U">
       </a>
     </div>
-  <div class="top-bar">
-    <span id="user-name" style="font-weight: bold;"></span>
-    <button class="btn" id="logoutBtn">Logout</button>
-    <button class="btn" id="adminBtn">Admin Panel</button>
-  </div>
-
+    <div class="top-bar">
+      <span id="user-name" style="font-weight: bold;"></span>
+      <button class="btn" id="logoutBtn">Logout</button>
+      <button class="btn" id="adminBtn">Admin Panel</button>
+    </div>
   </header>
 
   <!-- Área de busca -->
-    <div class="logo-center">
-      <a class="logo" href="./">
-        <img src="./imgs/logo.png" alt="Logo Dados 4U">
-      </a>
-    </div>
+  <div class="logo-center">
+    <a class="logo" href="./">
+      <img src="./imgs/logo.png" alt="Logo Dados 4U">
+    </a>
+  </div>
+
   <div class="search-section">
     <input
       id="valor"
       type="text"
       placeholder="Consultar CPF, nome, telefone..."
       oninput="aplicarMascara(this)"
-      onkeydown="if(event.key === 'Enter'){ fazerConsulta(); setTimeout(() => { window.location.href = '#resultado'; }, 300);}"
-      
+      onkeydown="if(event.key === 'Enter'){ fazerConsulta(); setTimeout(() => { window.location.href = '#resultado'; }, 300); }"
     />
-
     <div class="radio-inline">
       <label><input type="radio" name="tipo" value="cpf_cnpj" checked />CPF/CNPJ</label>
       <label><input type="radio" name="tipo" value="nome_completo" />NOME</label>
@@ -56,42 +58,28 @@
 
   <!-- Grade de resultados -->
   <div class="result-grid" id="resultado">
-    <div class="label">CPF</div>
-    <div class="value" id="cpf">-</div>
-
-    <div class="label ocultavel">NOME COMPLETO</div>
-    <div class="value ocultavel" id="nome_completo">-</div>
-
-    <div class="label ocultavel">DATA DE NASC.</div>
-    <div class="value ocultavel" id="data_nasc">-</div>
-
-    <div class="label ocultavel">SEXO</div>
-    <div class="value ocultavel" id="sexo">-</div>
-
-    <div class="label ocultavel">NOME DA MÃE</div>
-    <div class="value ocultavel" id="nome_mae">-</div>
-
-    <div class="label ocultavel">FALECIDO?</div>
-    <div class="value ocultavel" id="falecido">-</div>
-
-    <div class="label ocultavel">TELEFONE</div>
-    <div class="value ocultavel" id="telefones">-</div>
-
-    <div class="label ocultavel">E-MAIL</div>
-    <div class="value ocultavel" id="emails">-</div>
-
-    <div class="label ocultavel">OCUPAÇÃO</div>
-    <div class="value ocultavel" id="ocupacao">-</div>
-
-    <div class="label ocultavel">PARENTES</div>
-    <div class="value ocultavel" id="parentes">-</div>
+    <div class="label">CPF</div><div class="value" id="cpf">-</div>
+    <div class="label ocultavel">NOME COMPLETO</div><div class="value ocultavel" id="nome_completo">-</div>
+    <div class="label ocultavel">DATA DE NASC.</div><div class="value ocultavel" id="data_nasc">-</div>
+    <div class="label ocultavel">SEXO</div><div class="value ocultavel" id="sexo">-</div>
+    <div class="label ocultavel">NOME DA MÃE</div><div class="value ocultavel" id="nome_mae">-</div>
+    <div class="label ocultavel">FALECIDO?</div><div class="value ocultavel" id="falecido">-</div>
+    <div class="label ocultavel">TELEFONE</div><div class="value ocultavel" id="telefones">-</div>
+    <div class="label ocultavel">E-MAIL</div><div class="value ocultavel" id="emails">-</div>
+    <div class="label ocultavel">OCUPAÇÃO</div><div class="value ocultavel" id="ocupacao">-</div>
+    <div class="label ocultavel">PARENTES</div><div class="value ocultavel" id="parentes">-</div>
   </div>
 
+  <!-- Bibliotecas externas -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-  <script>
-    const version = new Date().getTime();
-    document.write(`<script type="module" src="./script/index.js?v=${version}"><\/script>`);
+
+  <!-- Carregamento dinâmico do JS com cache busting -->
+  <script type="module">
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = `./script/index.js?v=${Date.now()}`;
+    document.body.appendChild(script);
   </script>
 </body>
 </html>
