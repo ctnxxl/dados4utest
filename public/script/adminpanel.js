@@ -35,12 +35,16 @@ if (voltarBtn) {
   // 2) Carregar o histórico
   async function loadHistory(user) {
     const url = user.role === 'admin'
-      ? `/api/history?createdBy=${user.id}`
-      : '/api/history';
+      ? `/api/history?createdBy=${user.id}&t=${Date.now()}`
+      : `/api/history?t=${Date.now()}`;
 
     const res = await fetch(url, {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: {
+        'Authorization': 'Bearer ' + token
+      },
+      cache: 'no-store'
     });
+
     if (!res.ok) throw new Error('Falha ao buscar histórico');
 
     const list = await res.json();
@@ -58,6 +62,11 @@ if (voltarBtn) {
       tbody.appendChild(tr);
     });
   }
+
+  // ✅ Torna global para uso em mostrarSecao()
+  window.loadHistory = loadHistory;
+
+
 
   // 3) Criar usuário
   async function handleCreateUser(e, me) {
@@ -97,6 +106,7 @@ if (voltarBtn) {
   // === Boot do painel ===
   try {
     const me = await fetchMe();
+    window._meGlobal = me; // guarda para reutilizar depois
     document.body.style.visibility = 'visible';
 
     // se não for superadmin, remove a opção de criar superadmin

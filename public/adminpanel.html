@@ -101,6 +101,11 @@
     function mostrarSecao(id) {
       document.querySelectorAll('.secao').forEach(secao => secao.style.display = 'none');
       document.getElementById(id).style.display = 'block';
+
+      // Sempre recarrega histórico ao mostrar a seção
+      if (id === 'secao-historico' && window._meGlobal) {
+        loadHistory(window._meGlobal);
+      }
     }
   </script>
   <script>document.write('<script src="./script/adminpanel.js?v='+new Date().getHours()+'"><\/script>')</script>
