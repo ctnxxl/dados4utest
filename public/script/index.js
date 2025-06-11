@@ -42,11 +42,10 @@ if (logoutBtn) {
   logoutBtn.addEventListener('click', () => {
     localStorage.clear();
     sessionStorage.clear();
-    caches.keys().then(names => names.forEach(n => caches.delete(n))); // limpa SW cache
-    window.location.href = '/login?t=' + new Date().getTime(); // força recarregamento
+    caches.keys().then(names => names.forEach(n => caches.delete(n)));
+    window.location.href = '/login?t=' + new Date().getTime();
   });
 }
-
 
 const adminBtn = document.getElementById('adminBtn');
 if (adminBtn) {
@@ -58,17 +57,28 @@ if (adminBtn) {
 function aplicarMascara(input) {
   const tipo = document.querySelector('input[name="tipo"]:checked').value;
   if (tipo === 'cpf_cnpj') {
-    maskCPF(input);
+    maskCpfCnpj(input);
   } else if (tipo === 'telefone') {
     maskTelefone(input);
   }
 }
 
-function maskCPF(input) {
-  let v = input.value.replace(/\D/g, '').slice(0, 11);
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+function maskCpfCnpj(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 14);
+
+  if (v.length <= 11) {
+    // CPF
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  } else {
+    // CNPJ
+    v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+    v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+    v = v.replace(/(\d{4})(\d)/, '$1-$2');
+  }
+
   input.value = v;
 }
 
@@ -246,5 +256,6 @@ function fazerConsulta() {
     });
 }
 
-window.fazerConsulta = fazerConsulta;
+// Exporta funções globais para o HTML acessar
 window.aplicarMascara = aplicarMascara;
+window.fazerConsulta = fazerConsulta;
