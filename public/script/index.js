@@ -1,25 +1,51 @@
 // public/js/index.js
 import { carregarNomeDoUsuario } from "./carregaUser.js";
-// Notyf para notificações
-carregarNomeDoUsuario()
+
 const notyf = new Notyf();
 
-// Variáveis de controle de tentativas
+// Verifica se o token existe e ainda é válido
+const token = localStorage.getItem('token');
+if (!token) {
+  window.location.replace('/login');
+} else {
+  fetch('/api/user/me', {
+    headers: { Authorization: 'Bearer ' + token }
+  })
+    .then(res => {
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('token');
+        window.location.replace('/login');
+        return;
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (data?.username) {
+        document.getElementById('user-name').textContent = `Olá, ${data.username}`;
+      }
+    })
+    .catch(() => {
+      localStorage.removeItem('token');
+      window.location.replace('/login');
+    });
+}
+
+carregarNomeDoUsuario();
+
 let tentativas = 0;
 const maxTentativas = 10;
-const intervaloTentativas = 5000; // 5 segundos
+const intervaloTentativas = 5000;
 let swalAberto = false;
 
-// Logout: remove token e retorna ao login
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', () => {
     localStorage.removeItem('token');
+    sessionStorage.clear();
     window.location.replace('/login');
   });
 }
 
-// Botão Admin Panel
 const adminBtn = document.getElementById('adminBtn');
 if (adminBtn) {
   adminBtn.addEventListener('click', () => {
@@ -27,7 +53,6 @@ if (adminBtn) {
   });
 }
 
-// Aplica máscara de CPF/CNPJ ou telefone
 function aplicarMascara(input) {
   const tipo = document.querySelector('input[name="tipo"]:checked').value;
   if (tipo === 'cpf_cnpj') {
@@ -59,7 +84,6 @@ function maskTelefone(input) {
   input.value = v;
 }
 
-// Preenche grade de resultados
 function preencherResultado(data) {
   if (swalAberto) {
     Swal.close();
@@ -77,7 +101,6 @@ function preencherResultado(data) {
   document.getElementById('falecido').textContent = data.falecido || '-';
   document.getElementById('ocupacao').textContent = data.ocupacao || '-';
 
-  // Telefones
   const telContainer = document.getElementById('telefones');
   telContainer.innerHTML = '';
   if (Array.isArray(data.telefones) && data.telefones.length > 0) {
@@ -90,7 +113,6 @@ function preencherResultado(data) {
     telContainer.textContent = '-';
   }
 
-  // Emails
   const emailContainer = document.getElementById('emails');
   emailContainer.innerHTML = '';
   if (Array.isArray(data.emails) && data.emails.length > 0) {
@@ -103,7 +125,6 @@ function preencherResultado(data) {
     emailContainer.textContent = '-';
   }
 
-  // Parentes
   const parentContainer = document.getElementById('parentes');
   parentContainer.innerHTML = '';
   if (Array.isArray(data.parentes) && data.parentes.length > 0) {
@@ -123,7 +144,6 @@ function preencherResultado(data) {
   }
 }
 
-// Função principal de consulta
 function fazerConsulta() {
   let valor = document.getElementById('valor').value.trim();
   const campo = document.querySelector('input[name="tipo"]:checked').value;
@@ -136,14 +156,12 @@ function fazerConsulta() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
     },
     body: JSON.stringify({ tipo: campo, valor })
   })
     .then(res => res.json())
     .then(data => {
-      console.log('>> resposta de /consultar:', data);
-
       if (data.aguardando) {
         tentativas++;
         if (!swalAberto) {
@@ -192,8 +210,7 @@ function fazerConsulta() {
           div.innerHTML = `
             <strong>CPF:</strong> ${pessoa.cpf}<br>
             <strong>Nome:</strong> ${pessoa.nome_completo}<br>
-            <strong>Data de Nasc.:</strong> ${pessoa.data_nasc}
-          `;
+            <strong>Data de Nasc.:</strong> ${pessoa.data_nasc}`;
 
           const botao = document.createElement('button');
           botao.textContent = 'CONSULTAR CPF';
@@ -227,6 +244,5 @@ function fazerConsulta() {
     });
 }
 
-// Torna funções acessíveis no escopo global
 window.fazerConsulta = fazerConsulta;
 window.aplicarMascara = aplicarMascara;

@@ -4,6 +4,13 @@ const notyf = new Notyf();
 form.addEventListener('submit', async e => {
   e.preventDefault();
 
+  // 🔐 Limpa qualquer dado de login antigo
+  localStorage.removeItem('token');
+  sessionStorage.clear(); // se usar sessões
+  if ('caches' in window) {
+    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+  }
+
   const username = form.username.value.trim();
   const password = form.password.value;
 
@@ -21,21 +28,17 @@ form.addEventListener('submit', async e => {
       return;
     }
 
-    // ✅ Limpa todos os dados anteriores e força novo token
-    localStorage.clear();
-    sessionStorage.clear(); // extra: limpa também sessão, se usada
-    caches.keys().then(names => names.forEach(n => caches.delete(n))); // limpa service workers, se tiver
-
-    // ✅ Salva novo token corretamente
+    // ✅ Salva o novo token
     localStorage.setItem('token', data.token);
     notyf.success('Login bem-sucedido!');
 
-    // ✅ Redireciona e força recarregamento sem cache
+    // ✅ Redireciona e força nova instância da página
     setTimeout(() => {
-      window.location.href = '/?t=' + new Date().getTime(); // cache busting
+      window.location.href = '/?v=' + new Date().getTime(); // cache busting
     }, 500);
 
   } catch (err) {
-    notyf.error(err.message);
+    notyf.error('Erro ao conectar com o servidor');
+    console.error(err);
   }
 });
