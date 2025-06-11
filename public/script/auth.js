@@ -1,23 +1,11 @@
-// public/js/auth.js
-
 const form = document.getElementById('loginForm');
 const notyf = new Notyf();
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
 
-  // 🔐 Limpa qualquer dado de login anterior
   localStorage.removeItem('token');
   sessionStorage.clear();
-
-  if ('caches' in window) {
-    try {
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    } catch (err) {
-      console.warn('Erro ao limpar caches:', err);
-    }
-  }
 
   const username = form.username.value.trim();
   const password = form.password.value;
@@ -26,8 +14,7 @@ form.addEventListener('submit', async e => {
     const res = await fetch('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-      cache: 'no-store'
+      body: JSON.stringify({ username, password })
     });
 
     const data = await res.json();
@@ -37,17 +24,17 @@ form.addEventListener('submit', async e => {
       return;
     }
 
-    // ✅ Salva o novo token corretamente
     localStorage.setItem('token', data.token);
     notyf.success('Login bem-sucedido!');
 
-    // ✅ Redireciona com bust de cache
+    // Redireciona e força recarregamento total e sem cache
     setTimeout(() => {
-      window.location.href = '/?v=' + new Date().getTime();
+      window.location.href = '/';
+      window.location.reload(true);
     }, 500);
 
   } catch (err) {
-    console.error('Erro no login:', err);
     notyf.error('Erro ao conectar com o servidor');
+    console.error(err);
   }
 });

@@ -1,3 +1,5 @@
+// public/js/carregaUser.js
+
 export async function carregarNomeDoUsuario() {
   try {
     const token = localStorage.getItem('token');
