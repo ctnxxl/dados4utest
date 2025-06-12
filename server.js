@@ -11,6 +11,7 @@ import authRoutes from './src/routes/authRoutes.js';
 import { authenticateToken } from './src/middlewares/authMiddleware.js';
 import { checkAdminOrSuper } from './src/middlewares/superAdminMiddleware.js';
 import { consultar } from './src/controllers/consultaController.js';
+import { consultarCnpj } from './src/controllers/consultaCnpjController.js';
 import db from './src/models/index.js';
 
 // Import de controllers
@@ -71,7 +72,7 @@ app.get('/login', (_req, res) =>
 
 // 6) Endpoint de consulta de dados
 app.post('/consultar', authenticateToken, consultar);
-
+app.post('/consultar-cnpj', authenticateToken, consultarCnpj);
 // 7) Admin Panel
 app.get('/admin-panel',
   (_req, res) =>
