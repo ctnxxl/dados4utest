@@ -8,9 +8,7 @@ const token = localStorage.getItem('token');
 if (!token) {
   window.location.replace('/login');
 } else {
-  fetch('/api/user/me', {
-    headers: { Authorization: 'Bearer ' + token }
-  })
+  fetch('/api/user/me', { headers: { Authorization: 'Bearer ' + token } })
     .then(res => {
       if (res.status === 401 || res.status === 403) {
         localStorage.removeItem('token');
@@ -55,7 +53,29 @@ if (adminBtn) {
   adminBtn.addEventListener('click', () => window.location.replace('/admin-panel'));
 }
 
-// Máscaras
+// ───────────────────────────────────────────────────────
+// Máscaras p/ formatação de CPF e telefone ao exibir dados
+function formatCPF(cpf) {
+  const v = (cpf || '').toString().replace(/\D/g, '').padEnd(11, '0').slice(0, 11);
+  return v
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+}
+
+function formatTelefone(tel) {
+  const v = (tel || '').toString().replace(/\D/g, '');
+  if (v.length === 11) {
+    return v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  }
+  if (v.length === 10) {
+    return v.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+  }
+  return tel || '-';
+}
+// ───────────────────────────────────────────────────────
+
+// Aplica máscara enquanto digita
 function aplicarMascara(input) {
   const tipo = document.querySelector('input[name="tipo"]:checked').value;
   if (tipo === 'cpf_cnpj') maskCpfCnpj(input);
@@ -88,7 +108,6 @@ function maskTelefone(input) {
 
 // Preenche a grade de resultados (CPF ou CNPJ)
 function preencherResultado(data) {
-  // Fecha qualquer SweetAlert ainda aberto
   if (swalAberto) Swal.close(), swalAberto = false;
 
   const grid = document.querySelector('.result-grid');
@@ -96,7 +115,7 @@ function preencherResultado(data) {
   grid.style.display = 'grid';
   grid.innerHTML = ''; // limpa conteúdo anterior
 
-  // --- Bloco CNPJ ---
+  // ─── Bloco CNPJ ────────────────────────────────────────
   if (data.cnpj) {
     grid.innerHTML = `
       <div class="label">CNPJ</div><div class="value">${data.cnpj ?? '-'}</div>
@@ -118,9 +137,9 @@ function preencherResultado(data) {
     return;
   }
 
-  // --- Bloco CPF/PESSOA (campos fixos) ---
+  // ─── Bloco CPF/PESSOA (campos fixos) ────────────────────
   grid.innerHTML = `
-    <div class="label">CPF</div><div class="value">${data.cpf ?? '-'}</div>
+    <div class="label">CPF</div><div class="value">${formatCPF(data.cpf)}</div>
     <div class="label">Nome Completo</div><div class="value">${data.nome_completo ?? '-'}</div>
     <div class="label">Data Nasc.</div><div class="value">${data.data_nasc ?? '-'}</div>
     <div class="label">Sexo</div><div class="value">${data.sexo ?? '-'}</div>
@@ -129,15 +148,13 @@ function preencherResultado(data) {
     <div class="label">Ocupação</div><div class="value">${data.ocupacao ?? '-'}</div>
   `;
 
-  // --- Tabela de TELEFONES ---
+  // ─── Tabela de TELEFONES ──────────────────────────────
   const telefones = Array.isArray(data.telefones) ? data.telefones : [];
   const telLabel = document.createElement('div');
   telLabel.className = 'label ocultavel';
   telLabel.textContent = 'Telefones';
-
   const telValue = document.createElement('div');
   telValue.className = 'value ocultavel';
-
   const telTable = document.createElement('table');
   telTable.className = 'telefone-table';
 
@@ -161,11 +178,11 @@ function preencherResultado(data) {
     telTable.appendChild(tr);
   } else {
     telefones.forEach(item => {
-      const tr = document.createElement('tr');
       const num = item.numero   ?? '-';
       const sit = item.situacao ?? '-';
+      const tr  = document.createElement('tr');
       tr.innerHTML = `
-        <td style="text-align:center">${num}</td>
+        <td style="text-align:center">${formatTelefone(num)}</td>
         <td style="text-align:center">${sit}</td>
       `;
       telTable.appendChild(tr);
@@ -176,15 +193,13 @@ function preencherResultado(data) {
   grid.appendChild(telLabel);
   grid.appendChild(telValue);
 
-  // --- Tabela de PARENTES ---
+  // ─── Tabela de PARENTES ───────────────────────────────
   const parentes = Array.isArray(data.parentes) ? data.parentes : [];
   const parLabel = document.createElement('div');
   parLabel.className = 'label ocultavel';
   parLabel.textContent = 'Parentes';
-
   const parValue = document.createElement('div');
   parValue.className = 'value ocultavel';
-
   const parTable = document.createElement('table');
   parTable.className = 'parent-table';
 
@@ -209,13 +224,13 @@ function preencherResultado(data) {
     parTable.appendChild(tr);
   } else {
     parentes.forEach(item => {
-      const tr = document.createElement('tr');
       const nome = item.nome_parente ?? '-';
       const cpf  = item.cpf_parente  ?? '-';
-      const grau = item.grau        ?? '-';
+      const grau = item.grau         ?? '-';
+      const tr   = document.createElement('tr');
       tr.innerHTML = `
         <td style="text-align:center">${nome}</td>
-        <td style="text-align:center">${cpf}</td>
+        <td style="text-align:center">${formatCPF(cpf)}</td>
         <td style="text-align:center">${grau}</td>
       `;
       parTable.appendChild(tr);
@@ -226,7 +241,7 @@ function preencherResultado(data) {
   grid.appendChild(parLabel);
   grid.appendChild(parValue);
 
-  // --- Campos extras de CPF ---
+  // ─── Campos extras de CPF ─────────────────────────────
   [
     ['Renda',            data.renda],
     ['Risco de Crédito', data.risco_credito],
@@ -244,37 +259,35 @@ function preencherResultado(data) {
   });
 }
 
-
-
-
+// ───────────────────────────────────────────────────────
 // Função principal de consulta
 async function fazerConsulta() {
-  const raw = document.getElementById('valor').value.trim();
+  const raw   = document.getElementById('valor').value.trim();
   const radio = document.querySelector('input[name="tipo"]:checked').value;
   console.log('Raw:', raw, 'Tipo rádio:', radio);
 
-  // sempre mantém tipo = 'cpf_cnpj'
-  let tipo = 'cpf_cnpj';
+  // default CPF/CNPJ
+  let tipo  = 'cpf_cnpj';
   let valor = raw.replace(/\D/g, '');
 
   if (radio === 'telefone') {
-    tipo = 'numero_telefone';
+    tipo  = 'numero_telefone';
     valor = raw.replace(/\D/g, '');
   } else if (radio === 'nome_completo' || radio === 'email') {
-    tipo = radio;
+    tipo  = radio;
     valor = raw;
   }
 
-  // qual endpoint usar?
+  // endpoint
   const endpoint = (radio === 'cpf_cnpj' && valor.length === 14)
     ? '/consultar-cnpj'
     : '/consultar';
 
   const payload = { tipo, valor };
-  console.log('▶︎ Enviando payload:', payload, '->', endpoint);
+  console.log('▶︎ Payload:', payload, '->', endpoint);
 
   try {
-    const res = await fetch(endpoint, {
+    const res  = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
@@ -288,10 +301,13 @@ async function fazerConsulta() {
 
     if (!res.ok) return notyf.error(data.erro || `Erro ${res.status}`);
 
-    // long polling...
+    // long-polling
     if (data.aguardando) {
       tentativas++;
-      if (!swalAberto) Swal.fire({ title:'Consultando...', allowOutsideClick:false, showConfirmButton:false, didOpen:()=>Swal.showLoading()}), swalAberto=true;
+      if (!swalAberto) {
+        Swal.fire({ title:'Consultando...', allowOutsideClick:false, showConfirmButton:false, didOpen:()=>Swal.showLoading() });
+        swalAberto = true;
+      }
       if (tentativas < maxTentativas) return setTimeout(fazerConsulta, intervaloTentativas);
       Swal.close(); swalAberto=false; notyf.error('Timeout'); tentativas=0; return;
     }
@@ -303,8 +319,9 @@ async function fazerConsulta() {
     }
 
     preencherResultado(data);
-  } catch(err) {
-    console.error(err);
+
+  } catch (err) {
+    console.error('❌ Erro na consulta:', err);
     if (swalAberto) Swal.close(), swalAberto=false;
     notyf.error('Erro de conexão');
   }
