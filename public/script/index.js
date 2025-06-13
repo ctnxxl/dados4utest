@@ -79,7 +79,7 @@ function formatTelefone(tel) {
 function aplicarMascara(input) {
   const tipo = document.querySelector('input[name="tipo"]:checked').value;
   if (tipo === 'cpf_cnpj') maskCpfCnpj(input);
-  else if (tipo === 'telefone') maskTelefone(input);
+  else if (tipo === 'numero_telefone') maskTelefone(input);
 }
 function maskCpfCnpj(input) {
   let v = input.value.replace(/\D/g, '').slice(0, 14);
@@ -113,7 +113,7 @@ function preencherResultado(data) {
   const grid = document.querySelector('.result-grid');
   grid.classList.remove('ocultar-detalhes');
   grid.style.display = 'grid';
-  grid.innerHTML = ''; // limpa conteúdo anterior
+  grid.innerHTML = '';
 
   // ─── Bloco CNPJ ────────────────────────────────────────
   if (data.cnpj) {
@@ -136,7 +136,9 @@ function preencherResultado(data) {
     `;
     return;
   }
-
+    const tableStyle = `style="width: 100%; border-collapse: collapse;"`;
+    const thStyle = `style="text-align: left; padding: 4px 0;"`;
+    const tdStyle = `style="padding: 4px 0; vertical-align: top;"`;
   // ─── Bloco CPF/PESSOA (campos fixos) ────────────────────
   grid.innerHTML = `
     <div class="label">CPF</div><div class="value">${formatCPF(data.cpf)}</div>
@@ -146,184 +148,148 @@ function preencherResultado(data) {
     <div class="label">Nome Mãe</div><div class="value">${data.nome_mae ?? '-'}</div>
     <div class="label">Falecido?</div><div class="value">${data.falecido ?? '-'}</div>
     <div class="label">Ocupação</div><div class="value">${data.ocupacao ?? '-'}</div>
+    <div class="label">E-mail</div><div class="value">${data.email ?? '-'}</div> <div class="label">Telefones</div>
+    <div class="value">
+      <table ${tableStyle}>
+        <thead>
+          <tr>
+            <th ${thStyle} style="width: 150px;">Número</th>
+            <th ${thStyle}>Situação</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            data.telefones?.length > 0
+              ? data.telefones.map(tel => `
+                  <tr>
+                    <td ${tdStyle}>${tel.numero}</td>
+                    <td ${tdStyle}>${tel.situacao}</td>
+                  </tr>
+                `).join('')
+              : `<tr><td ${tdStyle}>-</td><td ${tdStyle}>-</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="label">Parentes</div>
+    <div class="value">
+      <table ${tableStyle}>
+        <thead>
+          <tr>
+            <th ${thStyle}>Nome Parente</th>
+            <th ${thStyle}>CPF</th>
+            <th ${thStyle}>Grau Parentesco</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            data.parentes?.length > 0
+              ? data.parentes.map(p => `
+                  <tr>
+                    <td ${tdStyle}>${p.nome ?? '-'}</td>
+                    <td ${tdStyle}>${p.cpf ?? '-'}</td>
+                    <td ${tdStyle}>${p.grau ?? '-'}</td>
+                  </tr>
+                `).join('')
+              : `<tr><td ${tdStyle}>-</td><td ${tdStyle}>-</td><td ${tdStyle}>-</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="label">Renda</div><div class="value">${data.renda ?? '-'}</div>
+    <div class="label">Risco de Crédito</div><div class="value">${data.risco_credito ?? '-'}</div>
+    <div class="label">Endereço</div><div class="value">${data.endereco ?? '-'}</div>
+    <div class="label">Sociedade</div><div class="value">${data.sociedade ?? '-'}</div>
   `;
 
-  // ─── Tabela de TELEFONES ──────────────────────────────
-  const telefones = Array.isArray(data.telefones) ? data.telefones : [];
-  const telLabel = document.createElement('div');
-  telLabel.className = 'label ocultavel';
-  telLabel.textContent = 'Telefones';
-  const telValue = document.createElement('div');
-  telValue.className = 'value ocultavel';
-  const telTable = document.createElement('table');
-  telTable.className = 'telefone-table';
-
-  // cabeçalho
-  const telHead = document.createElement('tr');
-  ['Número', 'Situação'].forEach(txt => {
-    const th = document.createElement('th');
-    th.textContent = txt;
-    th.style.textAlign = 'center';
-    telHead.appendChild(th);
-  });
-  telTable.appendChild(telHead);
-
-  // linhas (placeholder se vazio)
-  if (telefones.length === 0) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="text-align:center">-</td>
-      <td style="text-align:center">-</td>
-    `;
-    telTable.appendChild(tr);
-  } else {
-    telefones.forEach(item => {
-      const num = item.numero   ?? '-';
-      const sit = item.situacao ?? '-';
-      const tr  = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="text-align:center">${formatTelefone(num)}</td>
-        <td style="text-align:center">${sit}</td>
-      `;
-      telTable.appendChild(tr);
-    });
-  }
-
-  telValue.appendChild(telTable);
-  grid.appendChild(telLabel);
-  grid.appendChild(telValue);
-
-  // ─── Tabela de PARENTES ───────────────────────────────
-  const parentes = Array.isArray(data.parentes) ? data.parentes : [];
-  const parLabel = document.createElement('div');
-  parLabel.className = 'label ocultavel';
-  parLabel.textContent = 'Parentes';
-  const parValue = document.createElement('div');
-  parValue.className = 'value ocultavel';
-  const parTable = document.createElement('table');
-  parTable.className = 'parent-table';
-
-  // cabeçalho
-  const parHead = document.createElement('tr');
-  ['Nome Parente', 'CPF', 'Grau Parentesco'].forEach(txt => {
-    const th = document.createElement('th');
-    th.textContent = txt;
-    th.style.textAlign = 'center';
-    parHead.appendChild(th);
-  });
-  parTable.appendChild(parHead);
-
-  // linhas (placeholder se vazio)
-  if (parentes.length === 0) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="text-align:center">-</td>
-      <td style="text-align:center">-</td>
-      <td style="text-align:center">-</td>
-    `;
-    parTable.appendChild(tr);
-  } else {
-    parentes.forEach(item => {
-      const nome = item.nome_parente ?? '-';
-      const cpf  = item.cpf_parente  ?? '-';
-      const grau = item.grau         ?? '-';
-      const tr   = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="text-align:center">${nome}</td>
-        <td style="text-align:center">${formatCPF(cpf)}</td>
-        <td style="text-align:center">${grau}</td>
-      `;
-      parTable.appendChild(tr);
-    });
-  }
-
-  parValue.appendChild(parTable);
-  grid.appendChild(parLabel);
-  grid.appendChild(parValue);
-
-  // ─── Campos extras de CPF ─────────────────────────────
-  [
-    ['Renda',            data.renda],
-    ['Risco de Crédito', data.risco_credito],
-    ['Endereço',         data.endereco],
-    ['Sociedade',        data.sociedade]
-  ].forEach(([label, val]) => {
-    const l = document.createElement('div');
-    l.className = 'label ocultavel';
-    l.textContent = label;
-    const v = document.createElement('div');
-    v.className = 'value ocultavel';
-    v.textContent = val ?? '-';
-    grid.appendChild(l);
-    grid.appendChild(v);
-  });
+  // (tabelas omitidas por brevidade...)
 }
 
 // ───────────────────────────────────────────────────────
 // Função principal de consulta
-async function fazerConsulta() {
-  const raw   = document.getElementById('valor').value.trim();
-  const radio = document.querySelector('input[name="tipo"]:checked').value;
-  console.log('Raw:', raw, 'Tipo rádio:', radio);
+// public/js/index.js
 
-  // default CPF/CNPJ
-  let tipo  = 'cpf_cnpj';
-  let valor = raw.replace(/\D/g, '');
+// public/js/index.js
 
-  if (radio === 'telefone') {
-    tipo  = 'numero_telefone';
-    valor = raw.replace(/\D/g, '');
-  } else if (radio === 'nome_completo' || radio === 'email') {
-    tipo  = radio;
-    valor = raw;
+// public/js/index.js
+
+async function fazerConsulta(payloadOverride = null) {
+  let payload;
+
+  if (payloadOverride) {
+    // Usado para a segunda consulta (quando o usuário escolhe um CPF)
+    payload = payloadOverride;
+  } else {
+    // Consulta inicial feita pelo usuário
+    const raw = document.getElementById('valor').value.trim();
+    const radio = document.querySelector('input[name="tipo"]:checked').value;
+    const valor = (radio === 'cpf_cnpj' || radio === 'numero_telefone') ? raw.replace(/\D/g, '') : raw;
+    payload = { tipo: radio, valor };
   }
+  
+  const endpoint = (payload.tipo === 'cpf_cnpj' && payload.valor.length === 14) ? '/consultar-cnpj' : '/consultar';
 
-  // endpoint
-  const endpoint = (radio === 'cpf_cnpj' && valor.length === 14)
-    ? '/consultar-cnpj'
-    : '/consultar';
-
-  const payload = { tipo, valor };
-  console.log('▶︎ Payload:', payload, '->', endpoint);
+  Swal.fire({
+    title: 'Consultando...',
+    text: 'Isso pode levar alguns segundos.',
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    didOpen: () => Swal.showLoading()
+  });
 
   try {
-    const res  = await fetch(endpoint, {
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(payload),
-      cache: 'no-store'
     });
+
     const data = await res.json();
-    console.log('◀︎ Resposta:', res.status, data);
+    Swal.close();
 
-    if (!res.ok) return notyf.error(data.erro || `Erro ${res.status}`);
-
-    // long-polling
-    if (data.aguardando) {
-      tentativas++;
-      if (!swalAberto) {
-        Swal.fire({ title:'Consultando...', allowOutsideClick:false, showConfirmButton:false, didOpen:()=>Swal.showLoading() });
-        swalAberto = true;
-      }
-      if (tentativas < maxTentativas) return setTimeout(fazerConsulta, intervaloTentativas);
-      Swal.close(); swalAberto=false; notyf.error('Timeout'); tentativas=0; return;
+    if (!res.ok) {
+      return Swal.fire({ icon: 'error', title: data.erro || 'Erro', text: `Status: ${res.status}` });
     }
-    if (swalAberto) Swal.close(), swalAberto=false, tentativas=0;
 
+    // 👇 AQUI ESTÁ A NOVA LÓGICA PARA MÚLTIPLOS CPFS 👇
     if (data.multiplos_cpfs) {
-      // sua lógica de múltiplos...
-      return;
+      // Transforma o array de CPFs em um objeto para o SweetAlert
+      const inputOptions = {};
+      data.multiplos_cpfs.forEach(item => {
+        inputOptions[item.cpf_cnpj] = `${item.nome_completo} (${item.cpf_cnpj})`;
+      });
+
+      const { value: cpfEscolhido } = await Swal.fire({
+        title: 'Múltiplos resultados encontrados',
+        text: 'Este telefone está associado a mais de um CPF. Por favor, selecione o correto:',
+        input: 'radio',
+        inputOptions: inputOptions,
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Você precisa escolher uma opção!'
+          }
+        }
+      });
+
+      if (cpfEscolhido) {
+        // Se o usuário escolheu um CPF, fazemos uma nova consulta automática por aquele CPF
+        fazerConsulta({ tipo: 'cpf_cnpj', valor: cpfEscolhido });
+      }
+      return; // Encerra a execução desta chamada
     }
 
+    // Se não for o caso de múltiplos CPFs, exibe o resultado final
     preencherResultado(data);
 
   } catch (err) {
+    Swal.close();
     console.error('❌ Erro na consulta:', err);
-    if (swalAberto) Swal.close(), swalAberto=false;
-    notyf.error('Erro de conexão');
+    notyf.error('Erro de conexão ou falha na consulta.');
   }
 }
 
