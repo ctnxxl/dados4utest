@@ -3,7 +3,6 @@
 import pool from '../db.js';
 
 export async function fetchLeadData(tipo, valor) {
-  // ... (o início da função com mapCampos e valorLimpo permanece igual)
   const mapCampos = { cpf_cnpj: 'cpf_cnpj', nome_completo: 'nome_completo', numero_telefone: 'numero_telefone', email: 'email' };
   const coluna = mapCampos[tipo];
   if (!coluna) { return null; }
@@ -11,10 +10,12 @@ export async function fetchLeadData(tipo, valor) {
 
   try {
     let sql, params;
+    let tipoBuscaFinal = tipo;
+    let valorBuscaFinal = valorLimpo;
 
-    // 👇 A MUDANÇA COMEÇA AQUI 👇
+    // --- LÓGICA CORRIGIDA ---
+
     if (tipo === 'numero_telefone') {
-      // 1. Buscamos TODOS os leads associados ao telefone, SEM o LIMIT 1
       const buscaTelefoneSql = `
         SELECT l.cpf_cnpj, l.nome_completo
           FROM lead_telefones lt
@@ -23,62 +24,59 @@ export async function fetchLeadData(tipo, valor) {
       
       const { rows } = await pool.query(buscaTelefoneSql, [valorLimpo]);
 
-      if (rows.length === 0) {
-        return null; // Nenhum CPF encontrado, segue para a fila priority
-      }
+      if (rows.length === 0) return null;
+      if (rows.length > 1) return { multiplos_cpfs: rows };
 
-      if (rows.length > 1) {
-        // Múltiplos CPFs encontrados! Retorna um objeto especial para o frontend decidir.
-        console.log(`[Busca] Múltiplos CPFs encontrados para o telefone ${valorLimpo}`);
-        return { multiplos_cpfs: rows }; 
-      }
+      // Se encontrou só 1, preparamos para a busca final por CPF
+      tipoBuscaFinal = 'cpf_cnpj';
+      valorBuscaFinal = rows[0].cpf_cnpj;
+    
+    } else if (tipo === 'email') { // <-- NOVO BLOCO PARA TRATAR E-MAIL
+      const buscaEmailSql = `
+        SELECT l.cpf_cnpj, l.nome_completo
+          FROM lead_emails le
+          JOIN lead l ON l.lead_id = le.lead_id
+         WHERE le.email ILIKE $1`;
+      
+      const { rows } = await pool.query(buscaEmailSql, [`%${valorLimpo}%`]);
 
-      // Se encontrou APENAS 1 CPF, o 'valorLimpo' para a próxima busca será esse CPF.
-      // Isso nos permite reutilizar a lógica de busca por CPF.
-      tipo = 'cpf_cnpj'; // Forçamos o tipo para cpf_cnpj
-      valor = rows[0].cpf_cnpj; // Pegamos o único CPF encontrado
+      if (rows.length === 0) return null;
+      if (rows.length > 1) return { multiplos_cpfs: rows };
+      
+      // Se encontrou só 1, preparamos para a busca final por CPF
+      tipoBuscaFinal = 'cpf_cnpj';
+      valorBuscaFinal = rows[0].cpf_cnpj;
     }
     
-    // 2. Lógica de busca principal (reutilizada para CPF único ou busca direta)
+    // --- LÓGICA DE BUSCA PRINCIPAL (AGORA SIMPLIFICADA) ---
+    // Esta busca agora só precisa se preocupar com cpf_cnpj ou nome_completo
     const buscaPrincipalSql = `
       SELECT l.*, o.descricao AS ocupacao
         FROM lead l
         LEFT JOIN ocupacao o ON o.id_ocupacao = l.id_ocupacao
-       WHERE l.${tipo === 'email' ? 'email' : 'cpf_cnpj'} ${tipo === 'email' ? 'ILIKE' : '='} $1
+       WHERE l.${tipoBuscaFinal === 'nome_completo' ? 'nome_completo' : 'cpf_cnpj'} ${tipoBuscaFinal === 'nome_completo' ? 'ILIKE' : '='} $1
        LIMIT 1`;
     
-    params = [tipo === 'email' ? `%${valor}%` : valor];
+    params = [tipoBuscaFinal === 'nome_completo' ? `%${valorBuscaFinal}%` : valorBuscaFinal];
 
     const { rows: leadRows } = await pool.query(buscaPrincipalSql, params);
 
-    if (leadRows.length === 0) {
-      return null;
-    }
+    if (leadRows.length === 0) return null;
 
     const lead = leadRows[0];
+    // 👇 Adicione este log para resolvermos o problema dos campos que não aparecem 👇
+    console.log('DEBUG: Objeto "lead" cru recebido do banco:', lead);
+    
     const leadId = lead.lead_id;
 
-    // Monta detalhes adicionais
+    // ... (O restante do código com Promise.all e o return final permanece o mesmo)
     const [telQ, emQ, parQ, endQ] = await Promise.all([
-      pool.query(`SELECT numero_telefone AS numero, situacao FROM lead_telefones WHERE lead_id = $1`, [leadId]),
-      pool.query(`SELECT email FROM lead_emails WHERE lead_id = $1`, [leadId]),
-      pool.query(
-        `SELECT pl.cpf_cnpj_parente AS cpf_parente, l2.nome_completo AS nome_parente, pl.grau_parentesco AS grau
-           FROM possiveis_leads pl
-      LEFT JOIN lead l2 ON l2.cpf_cnpj = pl.cpf_cnpj_parente
-          WHERE pl.lead_id = $1`,
-        [leadId]
-      ),
-      pool.query(
-        `SELECT endereco_rua || ', ' || bairro || ', ' || cidade || '/' || estado || ' - CEP ' || cep AS endereco
-           FROM endereco
-          WHERE lead_id = $1
-          LIMIT 1`,
-        [leadId]
-      )
+        pool.query(`SELECT numero_telefone AS numero, situacao FROM lead_telefones WHERE lead_id = $1`, [leadId]),
+        pool.query(`SELECT email FROM lead_emails WHERE lead_id = $1`, [leadId]),
+        pool.query(`SELECT pl.cpf_cnpj_parente AS cpf_parente, l2.nome_completo AS nome_parente, pl.grau_parentesco AS grau FROM possiveis_leads pl LEFT JOIN lead l2 ON l2.cpf_cnpj = pl.cpf_cnpj_parente WHERE pl.lead_id = $1`,[leadId]),
+        pool.query(`SELECT endereco_rua || ', ' || bairro || ', ' || cidade || '/' || estado || ' - CEP ' || cep AS endereco FROM endereco WHERE lead_id = $1 LIMIT 1`,[leadId])
     ]);
     
-    // Formata e retorna o objeto de dados final
     return {
       cpf:           lead.cpf_cnpj           ?? '-',
       nome_completo: lead.nome_completo      ?? '-',
@@ -87,16 +85,17 @@ export async function fetchLeadData(tipo, valor) {
       nome_mae:      lead.nome_mae           ?? '-',
       falecido:      lead.falecido           ? 'SIM' : 'NÃO',
       ocupacao:      lead.ocupacao           ?? '-',
+      email:         emQ.rows[0]?.email      ?? '-',
       telefones:     telQ.rows.map(r => ({ numero: r.numero ?? '-', situacao: r.situacao ?? '-' })),
-      emails:        emQ.rows.map(r => r.email ?? '-'),
       parentes:      parQ.rows.map(r => ({ nome_parente: r.nome_parente ?? '-', cpf_parente: r.cpf_parente ?? '-', grau: r.grau ?? '-' })),
       endereco:      endQ.rows[0]?.endereco  ?? '-',
+      renda:         lead.renda              ?? '-',
+      risco_credito: lead.risco_credito      ?? '-',
       sociedade:     '-' 
     };
 
   } catch (err) {
     console.error('❌ Erro em fetchLeadData:', err);
-    // Lança o erro para que o chamador possa tratá-lo.
     throw err;
   }
 }
