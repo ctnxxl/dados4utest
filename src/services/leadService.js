@@ -51,7 +51,8 @@ export async function fetchLeadData(tipo, valor) {
     // --- LÓGICA DE BUSCA PRINCIPAL (AGORA SIMPLIFICADA) ---
     // Esta busca agora só precisa se preocupar com cpf_cnpj ou nome_completo
     const buscaPrincipalSql = `
-      SELECT l.*, o.descricao AS ocupacao
+      SELECT l.*, o.descricao AS ocupacao,
+          TO_CHAR(l.data_nasc, 'DD/MM/YYYY') AS data_nasc_formatada
         FROM lead l
         LEFT JOIN ocupacao o ON o.id_ocupacao = l.id_ocupacao
        WHERE l.${tipoBuscaFinal === 'nome_completo' ? 'nome_completo' : 'cpf_cnpj'} ${tipoBuscaFinal === 'nome_completo' ? 'ILIKE' : '='} $1
@@ -80,7 +81,7 @@ export async function fetchLeadData(tipo, valor) {
     return {
       cpf:           lead.cpf_cnpj           ?? '-',
       nome_completo: lead.nome_completo      ?? '-',
-      data_nasc:     lead.data_nasc_formatada?? '-',
+      data_nasc:     lead.data_nasc_formatada ?? '-',
       sexo:          lead.sexo === 'M' ? 'Masculino' : lead.sexo === 'F' ? 'Feminino' : '-',
       nome_mae:      lead.nome_mae           ?? '-',
       falecido:      lead.falecido           ? 'SIM' : 'NÃO',
