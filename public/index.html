@@ -44,11 +44,10 @@
   </div>
   <div class="search-section">
     <input
-      id="valor"
-      type="text"
-      placeholder="Consultar CPF, nome, telefone..."
-      oninput="aplicarMascara(this)"
-      onkeydown="if(event.key==='Enter'){ fazerConsulta(); setTimeout(()=>{location.href='#resultado';},300); }"
+        id="valor"
+        type="text"
+        placeholder="Consultar CPF, nome, telefone..."
+        oninput="aplicarMascara(this)"
     />
     <div class="radio-inline">
       <label><input type="radio" name="tipo" value="cpf_cnpj" checked />CPF/CNPJ</label>
