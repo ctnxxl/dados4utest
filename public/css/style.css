@@ -4,6 +4,11 @@
   scroll-behavior: smooth;
 }
 
+table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 body {
   font-family: Arial, sans-serif;
   background-color: #fff;
@@ -85,7 +90,7 @@ header {
 
 /* Result grid */
 .result-grid {
-  max-width: 700px;
+  max-width: 900px;
   margin: 1rem auto 3rem;
   display: grid;
   grid-template-columns: 200px 1fr;
